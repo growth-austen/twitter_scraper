@@ -1,21 +1,25 @@
 import tweepy
+import csv
 
-#remember to add your cosumer/access keys and tokens
+consumer_key = "###"
+consumer_secret = "###"
+
+access_token = "###"
+access_token_secret = "###"
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
 
-print "Grabbing the tweets of %s" % consumer_key
+outputFile = open('export.csv', 'a')
+outputWriter = csv.writer(outputFile)
 
-# public_tweets = api.home_timeline()
-# for tweet in public_tweets:
-#     print tweet.text
-
-results = api.search(q="@austenallred -RT")
-for tweet in results:
-	print "Tweet ID -> " + str(tweet.id)
-	print "Tweet Text -> " + tweet.text 
-	print "Tweet username -> " + tweet.author._json['screen_name']
-	print "\n\n"
+for tweet in tweepy.Cursor(api.search,
+                       q="@austenallred -RT",
+                       count=10000,
+                       result_type="recent",
+                       include_entities=True,
+                       lang="en").items():
+	print tweet.text
+	outputWriter.writerow([tweet.text.encode('utf-8'),tweet.author._json['screen_name'],tweet.id])
